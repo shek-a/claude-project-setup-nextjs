@@ -25,6 +25,7 @@ Setup, stack, and how to run everything: `README.md`.
 - A task is done when every test-list item for it passes, plus the suite that matches what changed:
   - a context's `infrastructure/` (repositories, adapters): `yarn test:integration`
   - a page, layout, journey, async Server Component, Server Action, Route Handler, or the app shell: `yarn test:e2e`, the journey against the production build. Vitest cannot render an async Server Component, so such a change is not done until this passes.
+  - anything else (a domain rule, a use case, a Client Component, a presentational component, a `model/` function): `yarn test` is enough, provided no page, Server Action, or journey changes with it.
 - Say which suites you ran and which you didn't. Never describe a suite you skipped as passing.
 - The `code-reviewer` has run, and every finding is fixed or declined with a reason.
 - `docs/domain/<context>.md`, `docs/domain/context-map.md`, and each use case's entry point match the code, and nothing is left TODO, skipped, or `.only`.
