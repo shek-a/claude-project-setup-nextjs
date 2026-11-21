@@ -1,0 +1,11 @@
+{
+  // The project's strictness. tsconfig.json (the one create-next-app writes) extends this file and keeps
+  // only the Next.js environment settings (module, lib, jsx, plugins, paths, include). Never loosen these flags.
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}
