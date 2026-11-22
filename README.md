@@ -1,4 +1,4 @@
-<!-- Template: replace every <placeholder> with this project's details, then delete this comment. -->
+<!-- Template: follow TEMPLATE.md to set the project up, replace every <placeholder> below with this project's details, then delete TEMPLATE.md and this comment. -->
 
 # \<Product name\>
 
@@ -21,39 +21,6 @@ The business domain is documented per bounded context in [`docs/domain/`](docs/d
 - **Node 24** (the LTS line), pinned in `.nvmrc`: `nvm use`
 - **Yarn** via Corepack: `corepack enable`
 - **Docker Desktop**, for the integration and end-to-end suites
-
-## Using this template
-
-This repository holds the conventions, not an application. To start a project from it:
-
-1. Create the app: `yarn create next-app <name> --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"`.
-2. Copy into it: `CLAUDE.md`, `.claude/`, `.mcp.json`, `.nvmrc`, `docs/`, `tsconfig.base.json`, and this `README.md`. Replace the generated `eslint.config.mjs` with this one, and merge the `.gitignore`.
-3. Make `tsconfig.json` extend the strict base, and include the test folders:
-   ```jsonc
-   { "extends": "./tsconfig.base.json", "include": ["next-env.d.ts", ".next/types/**/*.ts", "src", "e2e", "test"] }
-   ```
-4. Install what the configuration expects:
-   ```bash
-   yarn add zod server-only clsx tailwind-merge class-variance-authority
-   yarn add -D typescript-eslint @eslint/js @next/eslint-plugin-next eslint-plugin-react eslint-plugin-react-hooks \
-     eslint-plugin-better-tailwindcss eslint-plugin-boundaries eslint-import-resolver-typescript \
-     vitest @vitejs/plugin-react vite-tsconfig-paths jsdom @testing-library/react @testing-library/user-event \
-     @testing-library/dom @testing-library/jest-dom @playwright/test dotenv-cli
-   yarn remove eslint-config-next   # its bundled plugins collide with the stricter ones configured here
-   ```
-5. Add the scripts the hooks and the workflow call:
-   ```json
-   "typecheck": "next typegen && tsc --noEmit",
-   "test": "vitest run",
-   "test:integration": "vitest run --config vitest.integration.config.mts",
-   "test:e2e": "docker compose -f docker-compose.integration.yml up -d --wait && dotenv -e .env.test -- sh -c 'yarn migrate && yarn seed:e2e && playwright test'"
-   ```
-   `migrate` and `seed:e2e` are yours to add: they depend on the database library you choose.
-6. Turn on Cache Components in `next.config.ts`: `cacheComponents: true`.
-7. Create `.env.example` (every variable `src/config/` requires, with working local values) and `.env.test` (the same for tests: Compose ports and dummy keys, no real secrets; add `!.env.test` to `.gitignore`).
-8. Add the test configuration described in `.claude/skills/test-driven-development/` (`server.md` for Vitest, `integration.md` for Docker Compose, `playwright.md` for the journeys).
-
-Until `package.json` defines `typecheck` and `test`, the Stop hook skips them; the lint hook needs ESLint installed.
 
 ## Getting started
 
@@ -146,5 +113,40 @@ The repo is set up so Claude follows the same conventions you do:
 - **`.claude/hooks/`** — the gates: ESLint runs after every edit, and a turn can't end with failing typechecks or tests.
 - **`.mcp.json`** — the Context7 server, so Claude checks Next.js and library APIs against current documentation instead of memory.
 - **`.claude/agents/code-reviewer.md`** — reviews a diff against the domain documents and the rules.
+
+### Building a feature: `/grill-me`, then `/implement`
+
+A feature takes two commands, with one review in between. Example: customers should be able to extend a rental.
+
+**1. `/grill-me customers can extend a rental`**
+
+Claude reads the existing domain documents, then interviews you in rounds of numbered questions, each with a recommended answer, about the business only:
+
+```
+❓ Q1 - Overlap: can an extension overlap another booking of the same car?
+➡️ No: the extension is rejected and the customer is told the car is booked.
+
+❓ Q2 - Limit: is there a maximum extension?
+➡️ Yes, 14 days in total, as the current terms say.
+```
+
+You answer ("yes", or a correction), and it asks the next round until nothing is left open and you confirm you share an understanding. It then writes the requirements, with no design, to `docs/requirements/extend-rental.md` (problem, actors, agreed terms, rules, examples with real numbers, edge cases, the user journey, what is out of scope) and ends with the next command to run.
+
+**2. `/implement docs/requirements/extend-rental.md`**
+
+Claude designs the change from the brief and stops once for your review, showing:
+- the context map diagram (bounded contexts, what reaches them, events between them);
+- what changed in each domain document, and where each rule is enforced;
+- the entry points (the Server Action, page read, or Route Handler for each use case, with its command schema, DTO, and named failures) and each event published;
+- the test list, as test names, and the suites the change needs.
+
+For this example: an `extendRental` use case in the `rentals` context with the overlap and 14-day rules as invariants of the rental, an `extendRental` Server Action in the `manage-rentals` feature, and a small Client Component form on the server-rendered rental page.
+
+Ask for changes or approve. After approval it builds each test-list item test first (red, green, refactor), runs typecheck, the unit tests, and `yarn test:e2e` (a page and a Server Action changed), runs the `code-reviewer` and fixes or declines each finding, then makes one commit and reports what ran and what did not. It never pushes or opens a pull request; that is yours to do.
+
+**Variations**
+- **Something already designed:** `/implement docs/domain/rentals.md "rejects an extension that overlaps another booking"` builds named test-list items without a brief.
+- **A trivial change** (a typo, a config value): just ask. The test-first rule and the hooks still apply.
+- **A requirements gap found during design or build:** Claude stops and asks rather than inventing a rule, and records the answer in the brief.
 
 Reading `CLAUDE.md` and the rules is also the fastest way for a person to learn the conventions of this codebase.
