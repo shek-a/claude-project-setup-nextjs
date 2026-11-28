@@ -26,10 +26,10 @@ This repository holds the conventions for a server-first Next.js app, not an app
    "test:integration": "vitest run --config vitest.integration.config.mts",
    "test:e2e": "docker compose -f docker-compose.integration.yml up -d --wait && dotenv -e .env.test -- sh -c 'yarn migrate && yarn seed:e2e && playwright test'"
    ```
-   `migrate` and `seed:e2e` are yours to add: they depend on the database library you choose.
+   Also add `migrate`, `seed:dev`, and `seed:e2e`; they depend on the database library you choose. `seed:dev` resets `app_dev` to a small realistic sample (a few records in each state the app shows), going through the contexts' use cases where practical so the sample obeys the same rules as real data. `seed:e2e` resets `app_test` to what the journeys need. Each refuses to run unless the database name ends in `_dev` or `_test` respectively.
 6. Turn on Cache Components in `next.config.ts`: `cacheComponents: true`.
-7. Create `.env.example` (every variable `src/config/` requires, with working local values) and `.env.test` (the same for tests: Compose ports and dummy keys, no real secrets; add `!.env.test` to `.gitignore`).
-8. Add the test configuration described in `.claude/skills/test-driven-development/` (`server.md` for Vitest, `integration.md` for Docker Compose, `playwright.md` for the journeys).
+7. Create `.env.example` (every variable `src/config/` requires, with working local values; `DATABASE_URL` names `app_dev`) and `.env.test` (the same for tests, with `DATABASE_URL` naming `app_test`: Compose ports and dummy keys, no real secrets). `.gitignore` already keeps `.env.test` committed.
+8. Add the test configuration described in `.claude/skills/test-driven-development/` (`server.md` for Vitest, `integration.md` for Docker Compose, the two databases, and `docker/postgres/create-test-database.sql`, `playwright.md` for the journeys).
 
 Until `package.json` defines `typecheck` and `test`, the Stop hook skips them; the lint hook needs ESLint installed.
 

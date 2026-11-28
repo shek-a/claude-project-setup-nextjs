@@ -5,7 +5,8 @@ Setup, stack, and how to run everything: `README.md`.
 
 # Commands
 - Install: `yarn install`
-- Start locally: `yarn dev`
+- Start locally: `yarn dev` (Postgres from `docker-compose.integration.yml`; `yarn migrate`, then `yarn seed:dev` for sample data)
+- Databases: local development uses `app_dev`, the tests use `app_test`. Never point a test, a seed, or a migration run by a test at `app_dev`.
 - Unit and component tests: `yarn test`
 - Single test file: `yarn vitest run <path>`
 - Integration tests (need Docker): `yarn test:integration`

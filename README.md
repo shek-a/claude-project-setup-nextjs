@@ -27,12 +27,15 @@ The business domain is documented per bounded context in [`docs/domain/`](docs/d
 ```bash
 yarn install
 cp .env.example .env.local                                        # then fill in the values
-docker compose -f docker-compose.integration.yml up -d --wait     # Postgres
-yarn migrate
+docker compose -f docker-compose.integration.yml up -d --wait     # Postgres, with app_dev and app_test
+yarn migrate                                                      # app_dev, from .env.local
+yarn seed:dev                                                     # sample data to click through; rerun to reset
 yarn dev                                                          # <http://localhost:3000>
 ```
 
 The app reads its configuration from environment variables, parsed once at startup (`src/config/`). A missing variable fails immediately and names itself, so a boot error usually means a value is missing from your `.env.local`. Only variables prefixed `NEXT_PUBLIC_` reach the browser.
+
+Your local data lives in `app_dev` and the tests use `app_test`, in the same container, so running the suites never touches what you set up by hand. `yarn seed:dev` replaces `app_dev`'s contents with the sample set.
 
 ## Running the app
 

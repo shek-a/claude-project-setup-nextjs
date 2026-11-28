@@ -29,7 +29,7 @@ This suite is where async Server Components, pages, streaming, caching and reval
   ```json
   "test:e2e": "docker compose -f docker-compose.integration.yml up -d --wait && dotenv -e .env.test -- sh -c 'yarn migrate && yarn seed:e2e && playwright test'"
   ```
-  `yarn seed:e2e` truncates and inserts what the journeys need (a bookable car, a customer). Seeding is a script, so no test-only route reaches production code. `dotenv` is `dotenv-cli`; it gives the migration, the seed, the build, and the server the same test environment.
+  `yarn seed:e2e` truncates `app_test` and inserts what the journeys need (a bookable car, a customer); it refuses to run against a database whose name does not end in `_test`. Seeding is a script, so no test-only route reaches production code. `dotenv` is `dotenv-cli`; it gives the migration, the seed, the build, and the server the same test environment. Next.js does not override variables already set, so a `.env.local` pointing at `app_dev` cannot leak into the run.
 - `webServer` builds and starts the app; `use.baseURL` points at it:
   ```ts
   // playwright.config.ts
